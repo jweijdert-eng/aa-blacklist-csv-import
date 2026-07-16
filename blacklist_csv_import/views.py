@@ -1,3 +1,5 @@
+import re
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render
@@ -77,8 +79,9 @@ def add_names(request):
         if form.is_valid():
             names = []
             seen = set()
-            for line in form.cleaned_data["names"].splitlines():
-                name = line.strip().strip(",;").strip()
+            # splits op nieuwe regels, komma's en puntkomma's
+            for part in re.split(r"[\n\r,;]+", form.cleaned_data["names"]):
+                name = part.strip()
                 if name and name.lower() not in seen:
                     seen.add(name.lower())
                     names.append(name)

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aa-blacklist-csv-import"
-version = "0.3.0"
+version = "0.3.1"
 description = "CSV-importpagina en management-commando voor allianceauth-blacklist"
 readme = "README.md"
 requires-python = ">=3.8"
