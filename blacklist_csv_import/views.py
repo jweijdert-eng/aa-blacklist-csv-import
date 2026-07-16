@@ -6,7 +6,12 @@ from django.shortcuts import render
 
 from .esi import lookup_names
 from .forms import AddNamesForm, UploadCsvForm
-from .parser import build_records, import_records, read_rows_from_text
+from .parser import (
+    build_records,
+    import_records,
+    read_rows_from_text,
+    split_new_existing,
+)
 
 
 @login_required
@@ -22,29 +27,34 @@ def upload_csv(request):
             text = raw.decode("utf-8-sig", errors="replace")
             rows = read_rows_from_text(text)
 
-            if rows and "esi_id" not in rows[0]:
+            if rows and "main" not in rows[0]:
                 messages.error(
                     request,
-                    "Kolom 'esi_id' niet gevonden in dit bestand. Gebruik de "
-                    "CSV met de kolommen esi_type/esi_id/Corporation id/... "
-                    f"Gevonden kolommen: {', '.join(rows[0].keys())}",
+                    "Geen naam-kolom gevonden. Verwacht een kolom 'Main' of "
+                    "'eve_name'. Gebruik de rauwe blacklist-sheet of de "
+                    f"bewerkte CSV. Gevonden kolommen: {', '.join(k for k in rows[0] if k != 'known_alts')}",
                 )
             else:
                 added_by = form.cleaned_data["added_by"] or "Dutch Legions"
-                records, skipped = build_records(rows, added_by)
+                records, skipped, not_found = build_records(rows, added_by, resolve=True)
 
                 if form.cleaned_data["dry_run"]:
+                    new, already = split_new_existing(records)
                     result = {
                         "dry_run": True,
                         "ready": len(records),
                         "skipped": skipped,
+                        "not_found": not_found,
+                        "new_count": len(new),
+                        "already": [r["eve_name"] for r in already],
                         "created": None,
                         "existing": None,
                     }
                     messages.info(
                         request,
-                        f"Dry-run: {len(records)} rijen klaar voor import, "
-                        f"{len(skipped)} overgeslagen. Er is niets opgeslagen.",
+                        f"Dry-run: {len(new)} nieuw, {len(already)} staan al op de "
+                        f"blacklist, {len(not_found)} niet gevonden via ESI. Er is "
+                        "niets opgeslagen.",
                     )
                 else:
                     created, existing = import_records(records)
@@ -52,13 +62,14 @@ def upload_csv(request):
                         "dry_run": False,
                         "ready": len(records),
                         "skipped": skipped,
+                        "not_found": not_found,
                         "created": created,
                         "existing": existing,
                     }
                     messages.success(
                         request,
-                        f"Import klaar: {created} aangemaakt, "
-                        f"{existing} bestonden al, {len(skipped)} overgeslagen.",
+                        f"Import klaar: {created} aangemaakt, {existing} bestonden al, "
+                        f"{len(not_found)} niet gevonden via ESI.",
                     )
 
     return render(
@@ -107,17 +118,23 @@ def add_names(request):
                     records.append(record)
 
                 if form.cleaned_data["dry_run"]:
+                    new, already = split_new_existing(records)
+                    already_names = {r["eve_id"] for r in already}
+                    for rec in records:
+                        rec["already"] = rec["eve_id"] in already_names
                     result = {
                         "dry_run": True,
                         "found": records,
                         "not_found": not_found,
+                        "new_count": len(new),
+                        "already": [r["eve_name"] for r in already],
                         "created": None,
                         "existing": None,
                     }
                     messages.info(
                         request,
-                        f"Dry-run: {len(records)} van {len(names)} namen gevonden, "
-                        f"{len(not_found)} niet gevonden. Er is niets opgeslagen.",
+                        f"Dry-run: {len(new)} nieuw, {len(already)} staan al op de "
+                        f"blacklist, {len(not_found)} niet gevonden. Er is niets opgeslagen.",
                     )
                 else:
                     created, existing = import_records(records)

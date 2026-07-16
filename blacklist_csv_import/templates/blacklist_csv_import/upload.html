@@ -17,10 +17,13 @@
         <div class="bci-card">
             <div class="bci-info">
                 <i class="fas fa-circle-info"></i>
-                Upload een CSV met de kolommen <code>Main</code>, <code>Added By</code>, <code>Reason</code>,
-                <code>esi_type</code>, <code>esi_id</code>, <code>Corporation id/name</code> en
-                <code>Alliance id/name</code>. Bestaande entries (zelfde ID, categorie en reden) worden
-                automatisch overgeslagen &mdash; je kunt hetzelfde bestand veilig opnieuw uploaden.
+                Upload de <strong>rauwe blacklist-sheet</strong> (kolom <code>Main</code>, plus
+                optioneel <code>Reason</code>, <code>Added By</code> en <code>known alt</code>-kolommen)
+                &mdash; instructieregels bovenaan worden overgeslagen en ontbrekende IDs worden
+                <strong>automatisch via ESI opgezocht</strong>. Een reeds bewerkte CSV met
+                <code>esi_id</code>/<code>eve_id</code> werkt ook (dan zonder ESI). Bekende alts komen als
+                comment bij de entry. Bestaande entries (zelfde ID, categorie en reden) worden
+                overgeslagen &mdash; je kunt hetzelfde bestand veilig opnieuw uploaden.
             </div>
 
             <form method="post" enctype="multipart/form-data" id="bci-form">
@@ -79,12 +82,30 @@
                 </div>
                 <div class="bci-chips">
                     <span class="bci-chip ok"><span class="k">Klaar</span><span class="v">{{ result.ready }}</span></span>
-                    {% if not result.dry_run %}
+                    {% if result.dry_run %}
+                        <span class="bci-chip created"><span class="k">Nieuw</span><span class="v">{{ result.new_count }}</span></span>
+                        <span class="bci-chip existing"><span class="k">Staat al op blacklist</span><span class="v">{{ result.already|length }}</span></span>
+                    {% else %}
                         <span class="bci-chip created"><span class="k">Nieuw</span><span class="v">{{ result.created }}</span></span>
-                        <span class="bci-chip existing"><span class="k">Bestond al</span><span class="v">{{ result.existing }}</span></span>
+                        <span class="bci-chip existing"><span class="k">Stond al op blacklist</span><span class="v">{{ result.existing }}</span></span>
                     {% endif %}
-                    <span class="bci-chip skipped"><span class="k">Overgeslagen</span><span class="v">{{ result.skipped|length }}</span></span>
+                    <span class="bci-chip skipped"><span class="k">Niet gevonden</span><span class="v">{{ result.not_found|length }}</span></span>
+                    {% if result.skipped %}
+                        <span class="bci-chip skipped"><span class="k">Overgeslagen</span><span class="v">{{ result.skipped|length }}</span></span>
+                    {% endif %}
                 </div>
+                {% if result.already %}
+                    <details class="bci-skipped">
+                        <summary><i class="fas fa-user-check"></i> Staan al op de blacklist tonen ({{ result.already|length }})</summary>
+                        <p class="mt-2">{{ result.already|join:", " }}</p>
+                    </details>
+                {% endif %}
+                {% if result.not_found %}
+                    <details class="bci-skipped">
+                        <summary><i class="fas fa-triangle-exclamation"></i> Niet gevonden via ESI tonen</summary>
+                        <p class="mt-2">{{ result.not_found|join:", " }}</p>
+                    </details>
+                {% endif %}
                 {% if result.skipped %}
                     <details class="bci-skipped">
                         <summary><i class="fas fa-list"></i> Overgeslagen namen tonen</summary>

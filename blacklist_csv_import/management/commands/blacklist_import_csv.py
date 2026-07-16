@@ -26,6 +26,11 @@ class Command(BaseCommand):
             action="store_true",
             help="Alleen tonen wat er zou gebeuren, niets opslaan",
         )
+        parser.add_argument(
+            "--no-resolve",
+            action="store_true",
+            help="Namen zonder ID NIET via ESI opzoeken (alleen rijen met een ID importeren)",
+        )
 
     def handle(self, *args, **options):
         path = options["csv_file"]
@@ -34,21 +39,24 @@ class Command(BaseCommand):
         except FileNotFoundError:
             raise CommandError(f"Bestand niet gevonden: {path}")
 
-        if rows and "esi_id" not in rows[0]:
+        if rows and "main" not in rows[0]:
             raise CommandError(
-                "Kolom 'esi_id' niet gevonden. Gebruik de nieuwste versie van "
-                "de CSV (met kolommen esi_type/esi_id/Corporation id/...). "
-                f"Gevonden kolommen: {', '.join(rows[0].keys())}"
+                "Geen naam-kolom gevonden (verwacht 'Main' of 'eve_name'). "
+                f"Gevonden kolommen: {', '.join(k for k in rows[0] if k != 'known_alts')}"
             )
 
-        records, skipped = build_records(rows, options["added_by"])
-        self.stdout.write(
-            f"{len(records)} rijen klaar voor import, {len(skipped)} overgeslagen (geen ID)."
+        records, skipped, not_found = build_records(
+            rows, options["added_by"], resolve=not options["no_resolve"]
         )
-        if skipped:
-            preview = ", ".join(skipped[:15])
-            more = " ..." if len(skipped) > 15 else ""
-            self.stdout.write(f"Overgeslagen: {preview}{more}")
+        self.stdout.write(
+            f"{len(records)} rijen klaar voor import, {len(skipped)} overgeslagen "
+            f"(geen ID), {len(not_found)} niet gevonden via ESI."
+        )
+        for label, names in (("Overgeslagen", skipped), ("Niet gevonden", not_found)):
+            if names:
+                preview = ", ".join(names[:15])
+                more = " ..." if len(names) > 15 else ""
+                self.stdout.write(f"{label}: {preview}{more}")
 
         if options["dry_run"]:
             self.stdout.write(self.style.WARNING("Dry-run: er is niets opgeslagen."))

@@ -82,9 +82,12 @@
 
                 <div class="bci-chips">
                     <span class="bci-chip ok"><span class="k">Gevonden</span><span class="v">{{ result.found|length }}</span></span>
-                    {% if not result.dry_run %}
+                    {% if result.dry_run %}
+                        <span class="bci-chip created"><span class="k">Nieuw</span><span class="v">{{ result.new_count }}</span></span>
+                        <span class="bci-chip existing"><span class="k">Staat al op blacklist</span><span class="v">{{ result.already|length }}</span></span>
+                    {% else %}
                         <span class="bci-chip created"><span class="k">Nieuw</span><span class="v">{{ result.created }}</span></span>
-                        <span class="bci-chip existing"><span class="k">Bestond al</span><span class="v">{{ result.existing }}</span></span>
+                        <span class="bci-chip existing"><span class="k">Stond al op blacklist</span><span class="v">{{ result.existing }}</span></span>
                     {% endif %}
                     <span class="bci-chip skipped"><span class="k">Niet gevonden</span><span class="v">{{ result.not_found|length }}</span></span>
                 </div>
@@ -98,6 +101,7 @@
                                 <th>ID</th>
                                 <th>Corporatie</th>
                                 <th>Alliantie</th>
+                                {% if result.dry_run %}<th>Status</th>{% endif %}
                             </tr>
                         </thead>
                         <tbody>
@@ -108,6 +112,15 @@
                                     <td>{{ rec.eve_id }}</td>
                                     <td>{{ rec.corporation_name|default_if_none:"&mdash;" }}</td>
                                     <td>{{ rec.alliance_name|default_if_none:"&mdash;" }}</td>
+                                    {% if result.dry_run %}
+                                        <td>
+                                            {% if rec.already %}
+                                                <span class="bci-type" style="background:#3d2a12;color:#e3a008;">staat al op blacklist</span>
+                                            {% else %}
+                                                <span class="bci-type" style="background:#0f2e1a;color:#3fb950;">nieuw</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endif %}
                                 </tr>
                             {% endfor %}
                         </tbody>
