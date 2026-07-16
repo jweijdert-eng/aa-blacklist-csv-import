@@ -1,0 +1,79 @@
+{% extends "allianceauth/base-bs5.html" %}
+{% load i18n %}
+
+{% block page_title %}Blacklist CSV Import{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="page-header text-center mb-3">Blacklist CSV Import</h1>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <p>
+                    Upload een blacklist-CSV met de kolommen
+                    <code>Main</code>, <code>Added By</code>, <code>Reason</code>,
+                    <code>esi_type</code>, <code>esi_id</code>, <code>zkill_note</code>,
+                    <code>Corporation id/name</code> en <code>Alliance id/name</code>.
+                    Bestaande entries (zelfde ID, categorie en reden) worden overgeslagen,
+                    dus je kunt hetzelfde bestand veilig opnieuw uploaden.
+                </p>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            {% if field.field.widget.input_type == "checkbox" %}
+                                <div class="form-check">
+                                    <input type="checkbox" name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                                           class="form-check-input" {% if field.value %}checked{% endif %}>
+                                    <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                </div>
+                            {% elif field.field.widget.input_type == "file" %}
+                                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                <input type="file" name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                                       class="form-control" accept=".csv" required>
+                            {% else %}
+                                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                <input type="text" name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                                       class="form-control" value="{{ field.value|default_if_none:'' }}">
+                            {% endif %}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-file-import"></i> Importeren
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {% if result %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Resultaat
+                        {% if result.dry_run %}<span class="badge bg-warning text-dark">dry-run</span>{% endif %}
+                    </h5>
+                    <ul>
+                        <li>Rijen klaar voor import: <strong>{{ result.ready }}</strong></li>
+                        {% if not result.dry_run %}
+                            <li>Nieuw aangemaakt: <strong>{{ result.created }}</strong></li>
+                            <li>Bestonden al (overgeslagen): <strong>{{ result.existing }}</strong></li>
+                        {% endif %}
+                        <li>Overgeslagen (geen ID): <strong>{{ result.skipped|length }}</strong></li>
+                    </ul>
+                    {% if result.skipped %}
+                        <details>
+                            <summary>Overgeslagen namen tonen</summary>
+                            <p class="mt-2">{{ result.skipped|join:", " }}</p>
+                        </details>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock content %}
