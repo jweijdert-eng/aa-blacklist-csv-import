@@ -27,7 +27,7 @@ def upload_csv(request):
                     f"Gevonden kolommen: {', '.join(rows[0].keys())}",
                 )
             else:
-                added_by = form.cleaned_data["added_by"] or "CSV import"
+                added_by = form.cleaned_data["added_by"] or "Dutch Legions"
                 records, skipped = build_records(rows, added_by)
 
                 if form.cleaned_data["dry_run"]:

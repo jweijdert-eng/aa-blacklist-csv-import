@@ -46,7 +46,7 @@ def read_rows_from_file(path):
         return read_rows_from_text(f.read())
 
 
-def build_records(rows, default_added_by="CSV import"):
+def build_records(rows, default_added_by="Dutch Legions"):
     """Zet CSV-rijen om naar EveNote-velden. Geeft (records, skipped) terug."""
     records = []
     skipped = []

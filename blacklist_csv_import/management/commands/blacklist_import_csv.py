@@ -18,7 +18,7 @@ class Command(BaseCommand):
         parser.add_argument("csv_file", help="Pad naar het CSV-bestand")
         parser.add_argument(
             "--added-by",
-            default="CSV import",
+            default="Dutch Legions",
             help="Naam voor 'added_by' als de CSV geen 'Added By'-waarde heeft",
         )
         parser.add_argument(

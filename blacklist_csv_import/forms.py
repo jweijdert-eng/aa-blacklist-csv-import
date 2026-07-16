@@ -9,7 +9,7 @@ class UploadCsvForm(forms.Form):
     added_by = forms.CharField(
         label="Standaard 'added by'",
         required=False,
-        initial="CSV import",
+        initial="Dutch Legions",
         help_text="Wordt gebruikt voor rijen zonder eigen 'Added By'-waarde",
     )
     dry_run = forms.BooleanField(
