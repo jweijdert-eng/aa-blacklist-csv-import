@@ -58,3 +58,12 @@ karakters) worden als karakter geïmporteerd met dat oude ID.
 
 Zowel komma- als puntkomma-gescheiden bestanden werken (dus ook CSV's die door
 Excel opnieuw zijn opgeslagen), met of zonder UTF-8 BOM.
+
+## Namen toevoegen (zonder CSV)
+
+Naast de CSV-import heeft de plugin een pagina **Namen toevoegen**
+(`/blacklist-csv-import/names/`): plak namen van karakters, corporaties of
+allianties (een per regel), en de plugin zoekt de IDs, corporatie en
+alliantie automatisch op via de EVE ESI-API (met nette User-Agent headers,
+batching en rate-limit-afhandeling). Dry-run toont eerst een preview-tabel;
+daarna kun je de namen definitief aan de blacklist toevoegen.

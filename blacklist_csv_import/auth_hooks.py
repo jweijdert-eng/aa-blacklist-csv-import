@@ -11,7 +11,10 @@ class BlacklistCsvImportMenu(MenuItemHook):
             "Blacklist CSV Import",
             "fas fa-file-import fa-fw",
             "blacklist_csv_import:upload",
-            navactive=["blacklist_csv_import:upload"],
+            navactive=[
+                "blacklist_csv_import:upload",
+                "blacklist_csv_import:add_names",
+            ],
         )
 
     def render(self, request):
