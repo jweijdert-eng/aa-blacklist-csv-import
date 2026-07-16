@@ -5,173 +5,177 @@
 
 {% block content %}
     <style>
-        .bci-wrap { max-width: 860px; margin: 0 auto; }
-        .bci-header { display: flex; align-items: center; gap: 1rem; margin: 1rem 0 1.5rem; }
-        .bci-header .bci-icon {
-            width: 52px; height: 52px; border-radius: 14px; flex: 0 0 52px;
-            display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, #0dcaf0, #6610f2);
-            color: #fff; font-size: 1.35rem;
-            box-shadow: 0 4px 14px rgba(13, 202, 240, .35);
+        .bci-wrap { max-width: 980px; margin: 0 auto; padding-top: .5rem; }
+        .bci-title { font-size: 1.9rem; font-weight: 800; letter-spacing: .2px; margin-bottom: 1rem; }
+
+        .bci-tabs { display: flex; gap: .5rem; margin-bottom: 1.25rem; }
+        .bci-tab {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .35rem .9rem; border-radius: 7px; font-size: .85rem; font-weight: 600;
+            background: #25b0e8; color: #0b0e14; border: 1px solid #25b0e8;
         }
-        .bci-header h1 { margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: .3px; }
-        .bci-header p { margin: 0; opacity: .65; font-size: .9rem; }
+
         .bci-card {
-            border: 1px solid rgba(255,255,255,.08); border-radius: 16px;
-            background: rgba(255,255,255,.03);
-            box-shadow: 0 6px 24px rgba(0,0,0,.25);
-            overflow: hidden;
+            background: #10131b;
+            border: 1px solid rgba(37,176,232,.45);
+            border-radius: 10px;
+            box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 8px 22px rgba(0,0,0,.35);
+            padding: 1.4rem 1.5rem;
+            margin-bottom: 1.25rem;
         }
-        .bci-card .card-body { padding: 1.75rem; }
-        .bci-info {
-            display: flex; gap: .75rem; align-items: flex-start;
-            border: 1px solid rgba(13,202,240,.25); background: rgba(13,202,240,.07);
-            border-radius: 12px; padding: .9rem 1rem; margin-bottom: 1.5rem;
-            font-size: .875rem; line-height: 1.5;
+        .bci-card.result-ok { border-color: rgba(63,185,80,.65); }
+        .bci-card.result-dry { border-color: rgba(210,153,34,.7); }
+
+        .bci-info { font-size: .84rem; opacity: .75; line-height: 1.55; margin-bottom: 1.25rem; }
+        .bci-info i { color: #25b0e8; margin-right: .35rem; }
+        .bci-info code {
+            background: #171a23; border: 1px solid rgba(255,255,255,.1);
+            border-radius: 4px; padding: .05rem .35rem; font-size: .78rem; color: #e6b17a;
         }
-        .bci-info i { color: #0dcaf0; margin-top: .15rem; }
-        .bci-info code { background: rgba(13,202,240,.12); border-radius: 4px; padding: .05rem .35rem; }
+
         .bci-drop {
-            border: 2px dashed rgba(255,255,255,.2); border-radius: 14px;
-            padding: 2.25rem 1rem; text-align: center; cursor: pointer;
-            transition: border-color .2s, background .2s;
+            border: 2px dashed rgba(255,255,255,.18); border-radius: 10px;
+            background: #0d1017;
+            padding: 2rem 1rem; text-align: center; cursor: pointer;
+            transition: border-color .15s, background .15s;
+            margin-bottom: 1.25rem;
         }
-        .bci-drop:hover, .bci-drop.dragover {
-            border-color: #0dcaf0; background: rgba(13,202,240,.06);
+        .bci-drop:hover, .bci-drop.dragover { border-color: #25b0e8; background: rgba(37,176,232,.05); }
+        .bci-drop .bci-drop-icon { font-size: 1.8rem; color: #25b0e8; margin-bottom: .45rem; display: block; }
+        .bci-drop .bci-drop-title { font-weight: 600; font-size: .95rem; margin-bottom: .15rem; }
+        .bci-drop .bci-drop-sub { font-size: .78rem; opacity: .5; }
+        .bci-drop.has-file { border-style: solid; border-color: rgba(63,185,80,.8); background: rgba(63,185,80,.06); }
+        .bci-drop.has-file .bci-drop-icon { color: #3fb950; }
+        .bci-filename { font-weight: 700; color: #3fb950; word-break: break-all; }
+
+        .bci-label { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; opacity: .75; margin-bottom: .35rem; display: block; }
+        .bci-input {
+            background: #0d1017; border: 1px solid rgba(255,255,255,.14); color: inherit;
+            border-radius: 7px; padding: .45rem .7rem; width: 100%;
         }
-        .bci-drop .bci-drop-icon {
-            font-size: 2rem; color: #0dcaf0; margin-bottom: .5rem; display: block;
+        .bci-input:focus { outline: none; border-color: #25b0e8; box-shadow: 0 0 0 2px rgba(37,176,232,.2); }
+        .bci-help { font-size: .75rem; opacity: .5; margin-top: .3rem; }
+
+        .bci-btn {
+            display: inline-flex; align-items: center; gap: .45rem;
+            background: #25b0e8; color: #0b0e14; border: 1px solid #25b0e8;
+            font-weight: 700; font-size: .9rem;
+            padding: .5rem 1.4rem; border-radius: 7px; cursor: pointer;
+            transition: filter .15s;
         }
-        .bci-drop .bci-drop-title { font-weight: 600; margin-bottom: .15rem; }
-        .bci-drop .bci-drop-sub { font-size: .8rem; opacity: .55; }
-        .bci-drop.has-file { border-style: solid; border-color: #198754; background: rgba(25,135,84,.08); }
-        .bci-drop.has-file .bci-drop-icon { color: #198754; }
-        .bci-filename { font-weight: 600; color: #198754; word-break: break-all; }
-        .bci-submit {
-            padding: .65rem 1.6rem; font-weight: 600; border-radius: 10px;
+        .bci-btn:hover { filter: brightness(1.12); }
+        .bci-btn:disabled { opacity: .7; cursor: default; }
+
+        .bci-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .9rem; }
+        .bci-chip {
+            display: inline-flex; align-items: center; gap: .45rem;
+            background: #171a23; border: 1px solid rgba(255,255,255,.1);
+            border-radius: 5px; padding: .3rem .65rem; font-size: .8rem;
         }
-        .bci-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .9rem; margin-bottom: 1rem; }
-        .bci-stat {
-            border-radius: 12px; padding: 1rem; text-align: center;
-            border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.03);
+        .bci-chip .k { font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; }
+        .bci-chip .v { font-weight: 700; }
+        .bci-chip.ok .k { color: #25b0e8; }
+        .bci-chip.created .k { color: #3fb950; }
+        .bci-chip.existing .k { color: #d29922; }
+        .bci-chip.skipped .k { color: #f85149; }
+
+        .bci-badge {
+            display: inline-flex; align-items: center; gap: .3rem;
+            border-radius: 20px; padding: .18rem .7rem; font-size: .74rem; font-weight: 700;
         }
-        .bci-stat .num { font-size: 1.7rem; font-weight: 700; line-height: 1.1; }
-        .bci-stat .lbl { font-size: .78rem; text-transform: uppercase; letter-spacing: .6px; opacity: .6; margin-top: .25rem; }
-        .bci-stat.ok .num { color: #0dcaf0; }
-        .bci-stat.created .num { color: #198754; }
-        .bci-stat.existing .num { color: #ffc107; }
-        .bci-stat.skipped .num { color: #dc3545; }
-        .bci-result-title { display: flex; align-items: center; gap: .6rem; font-weight: 700; margin-bottom: 1rem; }
+        .bci-badge.ok { background: rgba(63,185,80,.15); color: #3fb950; border: 1px solid rgba(63,185,80,.4); }
+        .bci-badge.dry { background: rgba(210,153,34,.15); color: #d29922; border: 1px solid rgba(210,153,34,.45); }
+
+        .bci-result-head { display: flex; align-items: center; gap: .6rem; font-weight: 700; margin-bottom: 1rem; font-size: 1rem; }
+        .bci-skipped summary { cursor: pointer; color: #25b0e8; font-size: .85rem; font-weight: 600; }
+        .bci-skipped p { font-size: .8rem; opacity: .65; }
+        .bci-err { color: #f85149; font-size: .85rem; margin-bottom: 1rem; }
     </style>
 
     <div class="bci-wrap">
-        <div class="bci-header">
-            <div class="bci-icon"><i class="fas fa-file-csv"></i></div>
-            <div>
-                <h1>Blacklist CSV Import</h1>
-                <p>Importeer blacklist-entries in bulk vanuit een CSV-bestand</p>
-            </div>
+        <div class="bci-title">Blacklist CSV Import</div>
+
+        <div class="bci-tabs">
+            <span class="bci-tab"><i class="fas fa-file-import"></i> Importeren</span>
         </div>
 
-        <div class="bci-card card mb-4">
-            <div class="card-body">
-                <div class="bci-info">
-                    <i class="fas fa-circle-info"></i>
-                    <div>
-                        Upload een CSV met de kolommen <code>Main</code>, <code>Added By</code>,
-                        <code>Reason</code>, <code>esi_type</code>, <code>esi_id</code>,
-                        <code>Corporation id/name</code> en <code>Alliance id/name</code>.
-                        Bestaande entries (zelfde ID, categorie en reden) worden automatisch
-                        overgeslagen — je kunt hetzelfde bestand dus veilig opnieuw uploaden.
+        <div class="bci-card">
+            <div class="bci-info">
+                <i class="fas fa-circle-info"></i>
+                Upload een CSV met de kolommen <code>Main</code>, <code>Added By</code>, <code>Reason</code>,
+                <code>esi_type</code>, <code>esi_id</code>, <code>Corporation id/name</code> en
+                <code>Alliance id/name</code>. Bestaande entries (zelfde ID, categorie en reden) worden
+                automatisch overgeslagen &mdash; je kunt hetzelfde bestand veilig opnieuw uploaden.
+            </div>
+
+            <form method="post" enctype="multipart/form-data" id="bci-form">
+                {% csrf_token %}
+
+                <div class="bci-drop" id="bci-drop">
+                    <input type="file" name="{{ form.csv_file.html_name }}" id="{{ form.csv_file.id_for_label }}"
+                           accept=".csv" required class="d-none">
+                    <i class="fas fa-cloud-arrow-up bci-drop-icon" id="bci-drop-icon"></i>
+                    <div class="bci-drop-title" id="bci-drop-title">
+                        Sleep je CSV-bestand hierheen of <span style="color:#25b0e8;">klik om te bladeren</span>
+                    </div>
+                    <div class="bci-drop-sub" id="bci-drop-sub">
+                        Bijv. Blacklist_met_character_ids.csv &middot; komma of puntkomma &middot; UTF-8
+                    </div>
+                </div>
+                {% for error in form.csv_file.errors %}
+                    <div class="bci-err"><i class="fas fa-triangle-exclamation"></i> {{ error }}</div>
+                {% endfor %}
+
+                <div class="row g-4 align-items-end mb-4">
+                    <div class="col-md-6">
+                        <label class="bci-label" for="{{ form.added_by.id_for_label }}">Standaard &lsquo;added by&rsquo;</label>
+                        <input type="text" name="{{ form.added_by.html_name }}" id="{{ form.added_by.id_for_label }}"
+                               class="bci-input" value="{{ form.added_by.value|default_if_none:'CSV import' }}">
+                        <div class="bci-help">Gebruikt voor rijen zonder eigen &lsquo;Added By&rsquo;-waarde</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input type="checkbox" name="{{ form.dry_run.html_name }}" id="{{ form.dry_run.id_for_label }}"
+                                   class="form-check-input" role="switch" {% if form.dry_run.value %}checked{% endif %}>
+                            <label class="form-check-label fw-bold" for="{{ form.dry_run.id_for_label }}" style="font-size:.9rem;">
+                                Dry-run
+                            </label>
+                            <div class="bci-help">Alleen controleren, niets opslaan</div>
+                        </div>
                     </div>
                 </div>
 
-                <form method="post" enctype="multipart/form-data" id="bci-form">
-                    {% csrf_token %}
-
-                    <div class="bci-drop mb-4" id="bci-drop">
-                        <input type="file" name="{{ form.csv_file.html_name }}" id="{{ form.csv_file.id_for_label }}"
-                               accept=".csv" required class="d-none">
-                        <i class="fas fa-cloud-arrow-up bci-drop-icon" id="bci-drop-icon"></i>
-                        <div class="bci-drop-title" id="bci-drop-title">
-                            Sleep je CSV-bestand hierheen of <span class="text-info">klik om te bladeren</span>
-                        </div>
-                        <div class="bci-drop-sub" id="bci-drop-sub">
-                            Bijv. Blacklist_met_character_ids.csv &middot; komma of puntkomma &middot; UTF-8
-                        </div>
-                    </div>
-                    {% for error in form.csv_file.errors %}
-                        <div class="text-danger mb-3"><i class="fas fa-triangle-exclamation"></i> {{ error }}</div>
-                    {% endfor %}
-
-                    <div class="row g-4 align-items-end mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold" for="{{ form.added_by.id_for_label }}">
-                                <i class="fas fa-user-pen me-1 text-info"></i> Standaard &lsquo;added by&rsquo;
-                            </label>
-                            <input type="text" name="{{ form.added_by.html_name }}" id="{{ form.added_by.id_for_label }}"
-                                   class="form-control" value="{{ form.added_by.value|default_if_none:'CSV import' }}">
-                            <div class="form-text">Gebruikt voor rijen zonder eigen &lsquo;Added By&rsquo;-waarde</div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-check form-switch">
-                                <input type="checkbox" name="{{ form.dry_run.html_name }}" id="{{ form.dry_run.id_for_label }}"
-                                       class="form-check-input" role="switch" {% if form.dry_run.value %}checked{% endif %}>
-                                <label class="form-check-label fw-semibold" for="{{ form.dry_run.id_for_label }}">
-                                    Dry-run
-                                </label>
-                                <div class="form-text">Alleen controleren, niets opslaan</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-info bci-submit text-white" id="bci-submit">
-                        <i class="fas fa-file-import me-1"></i> Importeren
-                    </button>
-                </form>
-            </div>
+                <button type="submit" class="bci-btn" id="bci-submit">
+                    <i class="fas fa-file-import"></i> Importeren
+                </button>
+            </form>
         </div>
 
         {% if result %}
-            <div class="bci-card card mb-4">
-                <div class="card-body">
-                    <div class="bci-result-title">
-                        {% if result.dry_run %}
-                            <i class="fas fa-vial text-warning"></i> Resultaat
-                            <span class="badge bg-warning text-dark">dry-run &mdash; niets opgeslagen</span>
-                        {% else %}
-                            <i class="fas fa-circle-check text-success"></i> Import voltooid
-                        {% endif %}
-                    </div>
-                    <div class="bci-stats">
-                        <div class="bci-stat ok">
-                            <div class="num">{{ result.ready }}</div>
-                            <div class="lbl">Klaar voor import</div>
-                        </div>
-                        {% if not result.dry_run %}
-                            <div class="bci-stat created">
-                                <div class="num">{{ result.created }}</div>
-                                <div class="lbl">Nieuw aangemaakt</div>
-                            </div>
-                            <div class="bci-stat existing">
-                                <div class="num">{{ result.existing }}</div>
-                                <div class="lbl">Bestonden al</div>
-                            </div>
-                        {% endif %}
-                        <div class="bci-stat skipped">
-                            <div class="num">{{ result.skipped|length }}</div>
-                            <div class="lbl">Overgeslagen (geen ID)</div>
-                        </div>
-                    </div>
-                    {% if result.skipped %}
-                        <details>
-                            <summary class="text-info" style="cursor:pointer;">
-                                <i class="fas fa-list"></i> Overgeslagen namen tonen
-                            </summary>
-                            <p class="mt-2 small opacity-75">{{ result.skipped|join:", " }}</p>
-                        </details>
+            <div class="bci-card {% if result.dry_run %}result-dry{% else %}result-ok{% endif %}">
+                <div class="bci-result-head">
+                    {% if result.dry_run %}
+                        <i class="fas fa-vial" style="color:#d29922;"></i> Resultaat
+                        <span class="bci-badge dry"><i class="fas fa-flask"></i> dry-run &mdash; niets opgeslagen</span>
+                    {% else %}
+                        <i class="fas fa-circle-check" style="color:#3fb950;"></i> Import voltooid
+                        <span class="bci-badge ok"><i class="fas fa-check"></i> opgeslagen</span>
                     {% endif %}
                 </div>
+                <div class="bci-chips">
+                    <span class="bci-chip ok"><span class="k">Klaar</span><span class="v">{{ result.ready }}</span></span>
+                    {% if not result.dry_run %}
+                        <span class="bci-chip created"><span class="k">Nieuw</span><span class="v">{{ result.created }}</span></span>
+                        <span class="bci-chip existing"><span class="k">Bestond al</span><span class="v">{{ result.existing }}</span></span>
+                    {% endif %}
+                    <span class="bci-chip skipped"><span class="k">Overgeslagen</span><span class="v">{{ result.skipped|length }}</span></span>
+                </div>
+                {% if result.skipped %}
+                    <details class="bci-skipped">
+                        <summary><i class="fas fa-list"></i> Overgeslagen namen tonen</summary>
+                        <p class="mt-2">{{ result.skipped|join:", " }}</p>
+                    </details>
+                {% endif %}
             </div>
         {% endif %}
     </div>
