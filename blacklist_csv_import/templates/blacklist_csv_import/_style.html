@@ -104,5 +104,23 @@
         .bci-type.character { background: rgba(37,176,232,.15); color: #25b0e8; }
         .bci-type.corporation { background: rgba(210,153,34,.15); color: #d29922; }
         .bci-type.alliance { background: rgba(177,151,252,.15); color: #b197fc; }
+        .bci-sheet-link {
+            display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+            background: #0d1017; border: 1px solid rgba(255,255,255,.1);
+            border-radius: 7px; padding: .55rem .8rem; margin-bottom: 1.25rem;
+            font-size: .82rem;
+        }
+        .bci-sheet-link > i { color: #3fb950; font-size: 1.05rem; }
+        .bci-sheet-link a { color: #25b0e8; word-break: break-all; }
+        .bci-sheet-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; min-width: 0; }
+        .bci-sheet-name { font-weight: 700; font-size: .92rem; }
+        .bci-sheet-tab {
+            border-radius: 4px; padding: .1rem .45rem; font-size: .68rem; font-weight: 800;
+            letter-spacing: .5px; text-transform: uppercase;
+            background: rgba(37,176,232,.15); color: #25b0e8;
+        }
+        .bci-sheet-url { flex-basis: 100%; font-size: .72rem; opacity: .45; word-break: break-all; }
+        .bci-sheet-csv { margin-left: auto; white-space: nowrap; font-weight: 600; align-self: center; }
+        .bci-btn.commit { background: #3fb950; border-color: #3fb950; }
         .bci-notfound { color: #f85149; font-size: .85rem; }
     </style>

@@ -250,6 +250,37 @@ def split_new_existing(records):
     return new, already
 
 
+def split_rows_by_known_name(rows):
+    """Splits sheet-rijen in (nog onbekend, al bekend) op naam.
+
+    Scheelt bij de sheet-controle ruim 1300 ESI-lookups: alleen namen die nog
+    niet als EveNote bestaan hoeven opgezocht te worden. Het is bewust een
+    naam-vergelijking -- een recycled character (zelfde naam, nieuw ID) telt
+    daardoor als 'al bekend'; voor die gevallen is de CSV-upload er nog, die
+    ontdubbelt op ID.
+    """
+    from blacklist.models import EveNote
+
+    known = {
+        name.lower()
+        for name in EveNote.objects.values_list("eve_name", flat=True)
+        if name
+    }
+    unknown, already = [], []
+    seen = set()
+    for row in rows:
+        name = (row.get("main") or "").strip()
+        if not name:
+            continue
+        low = name.lower()
+        if low in known or low in seen:
+            already.append(name)
+        else:
+            seen.add(low)
+            unknown.append(row)
+    return unknown, already
+
+
 def import_records(records):
     """Sla records op als EveNote (+ bekende alts als comment).
 

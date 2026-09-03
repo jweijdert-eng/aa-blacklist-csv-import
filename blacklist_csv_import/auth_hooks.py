@@ -14,6 +14,7 @@ class BlacklistCsvImportMenu(MenuItemHook):
             navactive=[
                 "blacklist_csv_import:upload",
                 "blacklist_csv_import:add_names",
+                "blacklist_csv_import:sheet",
             ],
         )
 

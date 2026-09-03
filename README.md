@@ -21,6 +21,9 @@ Auth of via een management-commando. Werkt zowel met de **rauwe Google-sheet**
   comment bij de entry gezet.
 - **Namen toevoegen** — een aparte pagina om losse namen te plakken en via ESI
   op te zoeken.
+- **Google Sheet controleren** — een pagina die de gedeelde blacklist-sheet met
+  één knop ophaalt en laat zien welke namen erbij zijn gekomen; met een tweede
+  knop voeg je precies die nieuwe namen toe.
 
 ## Installatie
 
@@ -77,6 +80,31 @@ varianten (bijv. `Main/主角色`) worden herkend.
 | `known alt1/2/3` | nee | Bekende alts (ook meerdere per cel) → als comment op de entry |
 
 Komma-, puntkomma- én tab-gescheiden bestanden werken (met of zonder UTF-8 BOM).
+
+## Google Sheet controleren
+
+De pagina **Google Sheet** (`/blacklist-csv-import/sheet/`) haalt de gedeelde
+blacklist-sheet **2026 WinterCo (EN) Blacklist/Banned** (tabblad *The List*)
+rechtstreeks op via de CSV-export van Google — geen download of API-sleutel
+nodig, de sheet moet alleen leesbaar zijn voor iedereen met de link. Naam,
+tabblad en URL staan boven de knoppen op de pagina.
+
+- **Controleren op nieuwe** haalt de sheet op en vergelijkt hem met de blacklist
+  in Auth. Namen die er al op staan vallen meteen af (vergelijking op naam, dus
+  zonder ESI-lookup); alleen de rest wordt via ESI opgezocht. Je krijgt een
+  tabel met de nieuwe namen te zien — er wordt niets opgeslagen.
+- **&lt;n&gt; nieuwe toevoegen** verschijnt zodra er nieuwe namen zijn en schrijft
+  precies die entries weg (met hun eigen `Reason`/`Added By` uit de sheet en
+  bekende alts als comment).
+
+De URL staat in `blacklist_csv_import/sheet.py` en is te overschrijven in
+`myauth/settings/local.py`:
+
+```python
+BLACKLIST_CSV_IMPORT_SHEET_URL = "https://docs.google.com/spreadsheets/d/<id>/edit?gid=0"
+BLACKLIST_CSV_IMPORT_SHEET_NAME = "2026 WinterCo (EN) Blacklist/Banned"   # label op de pagina
+BLACKLIST_CSV_IMPORT_SHEET_TAB = "The List"                              # label op de pagina
+```
 
 ## Namen toevoegen (zonder CSV)
 

@@ -41,3 +41,12 @@ class AddNamesForm(forms.Form):
         required=False,
         initial=True,
     )
+
+
+class SheetSyncForm(forms.Form):
+    added_by = forms.CharField(
+        label="Standaard 'added by'",
+        required=False,
+        initial="Dutch Legions",
+        help_text="Wordt gebruikt voor rijen zonder eigen 'Added By'-waarde",
+    )

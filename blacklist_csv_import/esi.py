@@ -115,6 +115,30 @@ def _chunked(items, size):
     return [items[i : i + size] for i in range(0, len(items), size)]
 
 
+def _lookup_batch(session, names):
+    """Zoek eén batch namen op via /universe/ids/.
+
+    ESI weigert de héle batch (400) zodra er één onbruikbare naam in zit, dus bij
+    een fout splitsen we 'm in tweeën en proberen we opnieuw. Zo sleept één rare
+    cel in de sheet niet 500 andere namen mee. Geeft ``(data, onbruikbaar)`` terug.
+    """
+    data = _post(session, "/universe/ids/", names)
+    if data is not None:
+        return data, []
+    if len(names) == 1:
+        logger.warning("ESI kon naam %r niet verwerken.", names[0])
+        return {}, list(names)
+
+    mid = len(names) // 2
+    left, bad_left = _lookup_batch(session, names[:mid])
+    right, bad_right = _lookup_batch(session, names[mid:])
+    merged = {}
+    for part in (left, right):
+        for key, entries in (part or {}).items():
+            merged.setdefault(key, []).extend(entries)
+    return merged, bad_left + bad_right
+
+
 def lookup_names(names):
     """Zoekt namen (karakters, corporaties, allianties) op via ESI.
 
@@ -126,8 +150,18 @@ def lookup_names(names):
     records = []
     matched_lower = set()
 
-    for batch in _chunked(names, MAX_NAMES_PER_REQUEST):
-        data = _post(session, "/universe/ids/", batch)
+    # ESI eist unieke namen in één verzoek (anders 400 op de hele batch), en een
+    # sheet met 1500 rijen bevat gegarandeerd dubbelen.
+    unique = []
+    seen = set()
+    for name in names:
+        name = (name or "").strip()
+        if name and name.lower() not in seen:
+            seen.add(name.lower())
+            unique.append(name)
+
+    for batch in _chunked(unique, MAX_NAMES_PER_REQUEST):
+        data, _unusable = _lookup_batch(session, batch)
         if not data:
             continue
         for key, category in (
@@ -147,7 +181,7 @@ def lookup_names(names):
                 )
                 matched_lower.add(entry["name"].lower())
 
-    not_found = [n for n in names if n.lower() not in matched_lower]
+    not_found = [n for n in unique if n.lower() not in matched_lower]
 
     # Corp/alliantie van gevonden karakters opzoeken.
     char_ids = [r["eve_id"] for r in records if r["eve_catagory"] == "character"]

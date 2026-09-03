@@ -1,0 +1,150 @@
+{% extends "allianceauth/base-bs5.html" %}
+{% load i18n %}
+
+{% block page_title %}Blacklist-sheet controleren{% endblock %}
+
+{% block content %}
+    {% include "blacklist_csv_import/_style.html" %}
+
+    <div class="bci-wrap">
+        <div class="bci-title">Google Sheet</div>
+
+        <div class="bci-tabs">
+            <a class="bci-tab inactive" href="{% url 'blacklist_csv_import:upload' %}"><i class="fas fa-file-import"></i> CSV importeren</a>
+            <a class="bci-tab inactive" href="{% url 'blacklist_csv_import:add_names' %}"><i class="fas fa-user-plus"></i> Namen toevoegen</a>
+            <a class="bci-tab" href="{% url 'blacklist_csv_import:sheet' %}"><i class="fas fa-table"></i> Google Sheet</a>
+        </div>
+
+        <div class="bci-card">
+            <div class="bci-info">
+                <i class="fas fa-circle-info"></i>
+                Haalt de gedeelde blacklist-sheet rechtstreeks op en vergelijkt hem met de
+                blacklist in Alliance Auth. <strong>Controleren</strong> laat alleen zien welke
+                namen erbij zijn gekomen (er wordt niets opgeslagen); pas met
+                <strong>Nieuwe toevoegen</strong> worden ze weggeschreven. IDs worden via ESI
+                opgezocht en bekende alts komen als comment bij de entry.
+            </div>
+
+            <div class="bci-sheet-link">
+                <i class="fas fa-table"></i>
+                <div class="bci-sheet-meta">
+                    <a class="bci-sheet-name" href="{{ sheet_url }}" target="_blank" rel="noopener">{{ sheet_name }}</a>
+                    <span class="bci-sheet-tab">tabblad {{ sheet_tab }}</span>
+                    <div class="bci-sheet-url">{{ sheet_url }}</div>
+                </div>
+                {% if export_url %}
+                    <a class="bci-sheet-csv" href="{{ export_url }}" target="_blank" rel="noopener">
+                        <i class="fas fa-download"></i> CSV-export
+                    </a>
+                {% endif %}
+            </div>
+
+            <form method="post" id="bci-form">
+                {% csrf_token %}
+
+                <div class="row g-4 align-items-end mb-4">
+                    <div class="col-md-6">
+                        <label class="bci-label" for="{{ form.added_by.id_for_label }}">Standaard &lsquo;added by&rsquo;</label>
+                        <input type="text" name="{{ form.added_by.html_name }}" id="{{ form.added_by.id_for_label }}"
+                               class="bci-input" value="{{ form.added_by.value|default_if_none:'Dutch Legions' }}">
+                        <div class="bci-help">Gebruikt voor rijen zonder eigen &lsquo;Added By&rsquo;-waarde</div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="submit" name="action" value="check" class="bci-btn bci-action">
+                        <i class="fas fa-rotate"></i> Controleren op nieuwe
+                    </button>
+                    {% if result and result.dry_run and result.new_count %}
+                        <button type="submit" name="action" value="import" class="bci-btn bci-action commit">
+                            <i class="fas fa-plus"></i> {{ result.new_count }} nieuwe toevoegen
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        {% if result %}
+            <div class="bci-card {% if result.dry_run %}result-dry{% else %}result-ok{% endif %}">
+                <div class="bci-result-head">
+                    {% if result.dry_run %}
+                        <i class="fas fa-vial" style="color:#d29922;"></i> Controle
+                        <span class="bci-badge dry"><i class="fas fa-flask"></i> niets opgeslagen</span>
+                    {% else %}
+                        <i class="fas fa-circle-check" style="color:#3fb950;"></i> Toegevoegd
+                        <span class="bci-badge ok"><i class="fas fa-check"></i> opgeslagen</span>
+                    {% endif %}
+                </div>
+
+                <div class="bci-chips">
+                    <span class="bci-chip ok"><span class="k">Rijen in sheet</span><span class="v">{{ result.rows }}</span></span>
+                    {% if result.dry_run %}
+                        <span class="bci-chip created"><span class="k">Nieuw</span><span class="v">{{ result.new_count }}</span></span>
+                        <span class="bci-chip existing"><span class="k">Staat al op blacklist</span><span class="v">{{ result.already|length }}</span></span>
+                    {% else %}
+                        <span class="bci-chip created"><span class="k">Toegevoegd</span><span class="v">{{ result.created }}</span></span>
+                        <span class="bci-chip existing"><span class="k">Stond al op blacklist</span><span class="v">{{ result.existing }}</span></span>
+                    {% endif %}
+                    <span class="bci-chip skipped"><span class="k">Niet gevonden</span><span class="v">{{ result.not_found|length }}</span></span>
+                </div>
+
+                {% if result.new %}
+                    <table class="bci-table">
+                        <thead>
+                            <tr>
+                                <th>Naam</th>
+                                <th>Type</th>
+                                <th>ID</th>
+                                <th>Corporatie</th>
+                                <th>Alliantie</th>
+                                <th>Reden</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rec in result.new %}
+                                <tr>
+                                    <td><strong>{{ rec.eve_name }}</strong></td>
+                                    <td><span class="bci-type {{ rec.eve_catagory }}">{{ rec.eve_catagory }}</span></td>
+                                    <td>{{ rec.eve_id }}</td>
+                                    <td>{{ rec.corporation_name|default_if_none:"&mdash;" }}</td>
+                                    <td>{{ rec.alliance_name|default_if_none:"&mdash;" }}</td>
+                                    <td style="opacity:.7;">{{ rec.reason|truncatechars:70 }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% elif result.dry_run %}
+                    <div class="bci-info mb-0">
+                        <i class="fas fa-circle-check" style="color:#3fb950;"></i>
+                        Geen nieuwe namen &mdash; de blacklist is bij met de sheet.
+                    </div>
+                {% endif %}
+
+                {% if result.not_found %}
+                    <details class="bci-skipped">
+                        <summary><i class="fas fa-triangle-exclamation"></i> Niet gevonden via ESI tonen ({{ result.not_found|length }})</summary>
+                        <p class="mt-2">{{ result.not_found|join:", " }}</p>
+                    </details>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        (function () {
+            var form = document.getElementById("bci-form");
+            form.addEventListener("submit", function (e) {
+                var btn = e.submitter;
+                // Pas ná het opbouwen van de formulierdata uitschakelen, anders
+                // valt de name/value van de aangeklikte knop weg.
+                setTimeout(function () {
+                    form.querySelectorAll(".bci-action").forEach(function (b) { b.disabled = true; });
+                    if (btn) {
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> '
+                            + (btn.value === "import" ? "Bezig met toevoegen&hellip;" : "Bezig met controleren&hellip;");
+                    }
+                }, 0);
+            });
+        })();
+    </script>
+{% endblock content %}
